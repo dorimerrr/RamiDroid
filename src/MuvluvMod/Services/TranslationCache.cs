@@ -9,6 +9,7 @@ namespace MuvluvMod.Services;
 
 using MasterTranslationTables = Dictionary<string, Dictionary<string, Dictionary<string, string>>>;
 using NameTranslationTables = Dictionary<string, Dictionary<string, string>>;
+using UiTranslationTables = Dictionary<string, Dictionary<string, string>>;
 
 /// <summary>
 /// Loads translation resources through a manifest-verified local disk cache.
@@ -57,6 +58,13 @@ internal sealed class TranslationCache
             TranslationPaths.MasterData,
             null,
             TranslationHash.ComputeMasterData
+        );
+
+    public Task<UiTranslationTables> LoadUiTranslationsAsync() =>
+        LoadResourceAsync<UiTranslationTables>(
+            TranslationPaths.Ui,
+            null,
+            TranslationHash.ComputeUi
         );
 
     public Task<Dictionary<string, string>> LoadSceneTranslationsAsync(long sceneId) =>
@@ -137,6 +145,7 @@ internal sealed class TranslationCache
         {
             TranslationPaths.Names => _manifest?.NamesHash,
             TranslationPaths.MasterData => _manifest?.MasterDataHash,
+            TranslationPaths.Ui => _manifest?.UiHash,
             TranslationPaths.Scenes when resourceId != null => _manifest?.SceneHashes?.TryGetValue(
                 resourceId,
                 out var hash

@@ -24,6 +24,13 @@ internal static class TranslationHash
     public static string ComputeNames(NameTranslationTables tables) =>
         Compute(EnumerateNameEntries(tables));
 
+    /// <summary>
+    /// Computes the hash for the interface string tables, which use the same nested table shape as
+    /// the name tables.
+    /// </summary>
+    public static string ComputeUi(NameTranslationTables tables) =>
+        Compute(EnumerateNameEntries(tables));
+
     public static string ComputeMasterData(MasterTranslationTables tables) =>
         Compute(EnumerateMasterDataEntries(tables));
 

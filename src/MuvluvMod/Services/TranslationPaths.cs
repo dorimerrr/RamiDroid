@@ -13,6 +13,9 @@ internal static class TranslationPaths
     public const string Scenes = "scenes";
     public const string MasterData = "static";
 
+    /// <summary>Interface text that never reaches the master data hooks.</summary>
+    public const string Ui = "ui";
+
     public static string BuildRelativePath(
         string category,
         string language,

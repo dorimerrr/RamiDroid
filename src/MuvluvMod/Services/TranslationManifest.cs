@@ -19,4 +19,7 @@ internal sealed class TranslationManifest
 
     [JsonPropertyName("static")]
     public string MasterDataHash { get; set; }
+
+    [JsonPropertyName("ui")]
+    public string UiHash { get; set; }
 }

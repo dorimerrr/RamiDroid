@@ -25,6 +25,8 @@ public static class Config
     public static MelonPreferences_Entry<bool> TranslationPreferLocalFiles { get; private set; }
     public static MelonPreferences_Entry<string> FontBundlePath { get; private set; }
     public static MelonPreferences_Entry<bool> SubmitMissingScenes { get; private set; }
+    public static MelonPreferences_Entry<bool> TranslationUiEnabled { get; private set; }
+    public static MelonPreferences_Entry<bool> TranslationUiLogSeenText { get; private set; }
 
     private static bool _initializing;
     private static bool _entriesBound;
@@ -126,8 +128,22 @@ public static class Config
         SubmitMissingScenes = CreateEntry(
             debug,
             "SubmitMissingScenes",
+            false,
+            "是否向翻译调试服务提交缺失剧本（默认关闭）"
+        );
+
+        var ui = CreateCategory("Translation.Ui");
+        TranslationUiEnabled = CreateEntry(
+            ui,
+            "Enable",
             true,
-            "是否向翻译调试服务提交缺失剧本"
+            "是否翻译界面文字（按钮、菜单等动态生成的文字）；修改后重启生效"
+        );
+        TranslationUiLogSeenText = CreateEntry(
+            ui,
+            "LogSeenText",
+            false,
+            "诊断用途：在日志中记录未能翻译的界面文字，便于补充翻译"
         );
     }
 

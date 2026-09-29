@@ -13,6 +13,7 @@ namespace MuvluvMod.Services;
 
 using MasterTranslationTables = Dictionary<string, Dictionary<string, Dictionary<string, string>>>;
 using NameTranslationTables = Dictionary<string, Dictionary<string, string>>;
+using UiTranslationTables = Dictionary<string, Dictionary<string, string>>;
 
 /// <summary>
 /// Coordinates translation downloads, in-memory caching, and font loading.
@@ -41,6 +42,9 @@ public sealed class TranslationManager
         string,
         Dictionary<string, Dictionary<string, string>>
     > MasterDataTranslations { get; private set; } = new MasterTranslationTables();
+
+    /// <summary>Resolves the interface text that the master data hooks never see.</summary>
+    public UiTextResolver UiText { get; private set; } = UiTextResolver.Empty;
 
     internal TranslationManager(
         TranslationCache translationCache,
@@ -127,8 +131,9 @@ public sealed class TranslationManager
     {
         var namesTask = _translationCache.LoadNameTranslationsAsync();
         var masterDataTask = _translationCache.LoadMasterDataTranslationsAsync();
+        var uiTask = _translationCache.LoadUiTranslationsAsync();
 
-        await Task.WhenAll(namesTask, masterDataTask).ConfigureAwait(false);
+        await Task.WhenAll(namesTask, masterDataTask, uiTask).ConfigureAwait(false);
         if (_shutdown)
             return;
 
@@ -136,6 +141,9 @@ public sealed class TranslationManager
         bool masterDataLoaded = ApplyMasterDataTranslations(
             await masterDataTask.ConfigureAwait(false)
         );
+        // The interface tables are optional: a language that does not publish them must not make
+        // every scene load download the shared resources again.
+        ApplyUiTranslations(await uiTask.ConfigureAwait(false));
         _sharedTranslationsLoaded = namesLoaded && masterDataLoaded;
     }
 
@@ -185,6 +193,39 @@ public sealed class TranslationManager
                 + $"Skipped empty entries: {filtered.SkippedEmptyCount}"
         );
         return true;
+    }
+
+    private bool ApplyUiTranslations(UiTranslationTables tables)
+    {
+        if (tables == null || tables.Count == 0)
+        {
+            UiText = UiTextResolver.Empty;
+            if (_translationCache.IsMissingFromManifest(TranslationPaths.Ui))
+                Logger.Info("UI translation is not published for this language");
+            else
+                Logger.Warn("UI translation load failed");
+            return false;
+        }
+
+        var created = UiTextResolver.Create(tables);
+        UiText = created.Resolver;
+        Logger.Info(
+            $"UI translation loaded. Strings: {created.StringCount}, "
+                + $"Templates: {created.TemplateCount}, "
+                + $"Skipped identity entries: {created.SkippedIdentityCount}, "
+                + $"Skipped empty entries: {created.SkippedEmptyCount}"
+        );
+        return true;
+    }
+
+    /// <summary>
+    /// Returns the translated interface text for <paramref name="original"/> when the UI tables
+    /// cover it, and leaves the string untouched otherwise.
+    /// </summary>
+    public bool TryTranslateUiText(string original, out string translated)
+    {
+        translated = original;
+        return Config.TranslationUiEnabled.Value && UiText.TryResolve(original, out translated);
     }
 
     private async Task EnsureSceneTranslationLoadedAsync(long sceneId)
