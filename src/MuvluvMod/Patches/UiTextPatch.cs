@@ -211,18 +211,6 @@ public static class UiTextPatch
         Logger.Info($"[UI] untranslated text: \"{UiTextSeenLog.Truncate(text)}\"");
     }
 
-    /// <summary>Logs whether the setter hook is installed, so a missing target stays visible.</summary>
-    public static void VerifyPatch(string harmonyId)
-    {
-        var target = AccessTools.Method(typeof(TMP_Text), "set_text");
-        bool patched =
-            target != null && Harmony.GetPatchInfo(target)?.Owners?.Contains(harmonyId) == true;
-        if (patched)
-            Logger.Info("UI text setter patch verified: TMPro.TMP_Text.set_text");
-        else
-            Logger.Warn("UI text setter patch is missing: TMPro.TMP_Text.set_text");
-    }
-
     /// <summary>
     /// Reapplies the tables once to the text that was rendered before they finished loading.
     /// </summary>

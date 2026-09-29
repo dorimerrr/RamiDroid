@@ -24,7 +24,6 @@ public static class PatchManager
         {
             harmony.PatchAll(typeof(PatchManager).Assembly);
             _harmony = harmony;
-            UiTextPatch.VerifyPatch(ModInfo.Name);
             UiTextPatch.ScheduleInitialRefresh();
             Logger.Info("Harmony patches applied");
         }
